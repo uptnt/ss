@@ -1,11 +1,5 @@
 //profile-update-interval: 6
 vless://8366d40d-e04d-4184-beba-c924ff54bdfa@31.220.111.160:443?flow=xtls-rprx-vision&fp=chrome&pbk=3txs8T2vU1k1XIfa5T4sxkoNk9BmYN2Ce76gY2RwgFk&security=reality&sid=&sni=apple.com&spx=%2F&type=tcp#SkyWave%20VPN%20%7C%20%F0%9F%87%AC%F0%9F%87%A7%20UK%20%E2%84%962
-trojan://klZqKyxq0H@57.128.165.173:1935?security=tls&headerType=&type=tcp&sni=x1-england-ovh-v2.devefun.net#France
-trojan://pqlnPNu423@57.129.89.172:1935?security=tls&headerType=&type=tcp&sni=x1-germany-ovh-v2.devefun.net#France
-trojan://OLq0FfOlp7@141.227.160.88:1935?security=tls&headerType=&type=tcp&sni=x1-sweden-ovh-v2.devefun.net#France
-trojan://4732adfa16c6450bbef87264e41332db@165.22.74.230:443?security=tls&headerType=&type=tcp&sni=nextstepcareer.online#Germany
-vless://3b50f120-aaa9-4659-8e45-454aba569815@Speedtest.net:80?mode=auto&path=%2F%40UnlimitedDev----%40UnlimitedDev-----%40UnlimitedDev----%40UnlimitedDev----%40UnlimitedDev----%40UnlimitedDev----%40UnlimitedDev----%40UnlimitedDev----%40UnlimitedDev----%40UnlimitedDev----%40UnlimitedDev----%40UnlimitedDev%3Fed%3D2480&security=none&encryption=none&host=jointo_unlimiteddev.ir&type=xhttp#mn
-vless://6b722d4b-3cd4-4809-6fe7-3a9e6047b891@91.107.180.150:5582?type=grpc&serviceName=BetForward&authority=&security=reality&pbk=gPkWFYUL3EuIK_5cr-BnqS7ZgXko_Jh6_bvAc5XaNX0&fp=chrome&sni=refersion.com&sid=93be1fc9&spx=%2F#🇩🇪 BetForward-All Operators
 ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTowenlEUloxWG1OWGFhQ0FON0tFQThh@45.151.62.54:28825#RX%20-%2095
 ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpHeDc5dlJETnU3M0g1V3lIa0RYS2lT@78.129.140.11:443#RX%20-%20211
 ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpSaVB1S0pKbDE4Wmd2THBUald4QndTZktpUGt0OWd6Rkt5eEdDWThlSHRPY0RiMlg@5.189.201.250:31348#RX%20-%20240
@@ -41,17 +35,3 @@ ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpvWklvQTY5UTh5aGNRVjhrYTNQYTNB@193.29.139.251
 ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpvWklvQTY5UTh5aGNRVjhrYTNQYTNB@45.87.175.22:8080#RX%20-%20351
 ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpvWklvQTY5UTh5aGNRVjhrYTNQYTNB@45.87.175.58:8080#RX%20-%20354
 ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpXc3R1U25sdTRpZUE5TTBM@admin.c2.webramz.co:443#212
-vless://ca142e71-cb60-4437-b89f-18731548a68d@shop.fox-vps-2024.com:8080?security=none&encryption=none&host=myket.ir&headerType=http&type=tcp#%F0%9F%87%A9%F0%9F%87%AA
-ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTp1MTdUM0J2cFlhYWl1VzJj@api.namasha.co:443#RX%20-%20179
-ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTp1MTdUM0J2cFlhYWl1VzJj@series-a2-mec.samanehha.co:443#RX%20-%20181
-ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTp1MTdUM0J2cFlhYWl1VzJj@series-a2-mec.varzesh360.co:443#RX%20-%20182
-ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpCb2cwRUxtTU05RFN4RGRR@admin.c3.webramz.co:443#RX%20-%20198
-ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpCb2cwRUxtTU05RFN4RGRR@series-a2-me.samanehha.co:443#RX%20-%20199
-ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpCb2cwRUxtTU05RFN4RGRR@series-a2-me.varzesh360.co:443#RX%20-%20200
-ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpGT01LU25GVXVCc2RsMVg3@admin.c2.havij.co:443#RX%20-%20205
-ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpXc3R1U25sdTRpZUE5TTBM@admin.c2.webramz.co:443#RX%20-%20264
-ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpCb2cwRUxtTU05RFN4RGRR@series-a2-me.samanehha.co:443#RX%20-%20359
-ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTp1MTdUM0J2cFlhYWl1VzJj@series-a2-mec.samanehha.co:443#RX%20-%20360
-ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTp1MTdUM0J2cFlhYWl1VzJj@series-a2-mec.varzesh360.co:443#RX%20-%20361
-ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpCb2cwRUxtTU05RFN4RGRR@series-a2-me.samanehha.co:443#hh
-ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpCb2cwRUxtTU05RFN4RGRR@series-a2-me.varzesh360.co:443#%E6%9C%AA%E7%9F%A535%20177.1KB%2Fs
