@@ -1,2 +1,2 @@
 //profile-update-interval: 6
-vless://b4b98274-82fa-41df-a7ba-0add83ed2adf@64.176.210.187:443?path=%2F&security=tls&encryption=none&host=dynamo-ember-451.175flying.workers.dev&fp=random&type=ws&sni=dynamo-ember-451.175flying.workers.dev#North%20America-Newark-EWR%2020
+vless://b4b98274-82fa-41bj-a7ba-0add83ed2adf@64.176.81.187:443?path=%2F&security=tls&encryption=none&host=dynamo-ember-451.175flying.workers.dev&fp=random&type=ws&sni=dynamo-ember-451.175flying.workers.dev#North%20America-Newark-EWR%2020
