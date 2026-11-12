@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chat — OpenAI-compatible</title>
+<style>
+:root {
+    --bg: #212121;
+    --surface: #212121;
+    --surface2: #2f2f2f;
+    --border: #424242;
+    --text: #ececec;
+    --text-muted: #b4b4b4;
+    --accent: #ececec;
+    --accent-hover: #fff;
+    --user-bubble: #2f2f2f;
+    --assistant-bubble: #212121;
+    --danger: #f87171;
+    --success: #34d399;
+    --radius: 16px;
+    --radius-sm: 8px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    height: 100dvh; display: flex; flex-direction: column; overflow: hidden;
+}
+
+/* header bar */
+.header {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 16px; flex-shrink: 0;
+    border-bottom: 1px solid var(--border);
+}
+.header .brand { font-weight: 600; font-size: 16px; }
+.header .spacer { flex: 1; }
+.header select {
+    background: var(--surface2); color: var(--text);
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    padding: 6px 10px; font-size: 13px; font-family: inherit;
+    cursor: pointer; max-width: 200px; outline: none;
+}
+.header select:focus { border-color: #666; }
+.header button {
+    background: var(--surface2); color: var(--text-muted);
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    padding: 8px 14px; font-size: 14px; cursor: pointer; line-height: 1;
+}
+.header button.icon-btn {
+    padding: 2px 28px; font-size: 24px; line-height: 1;
+    color: #fff; background: #3b82f6;
+}
+.header button.icon-btn:hover { background: #2563eb; color: #fff; }
+.header button:hover { background: var(--border); color: var(--text); }
+
+/* settings overlay */
+.settings-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,.6); z-index: 10;
+    justify-content: center; align-items: center; padding: 16px;
+}
+.settings-overlay.show { display: flex; }
+.settings-panel {
+    background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 24px; width: 100%; max-width: 420px; max-height: 90dvh; overflow-y: auto;
+}
+.settings-panel h3 { margin-bottom: 16px; font-size: 16px; }
+.settings-panel label {
+    display: block; font-size: 11px; color: var(--text-muted);
+    margin-bottom: 4px; margin-top: 14px;
+    text-transform: uppercase; letter-spacing: .5px;
+}
+.settings-panel input {
+    width: 100%; background: var(--bg); color: var(--text);
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    padding: 10px 12px; font-size: 14px; font-family: inherit;
+}
+.settings-panel input:focus { outline: none; border-color: #666; }
+.settings-panel .model-row { display: flex; gap: 8px; }
+.settings-panel .model-row select { flex: 1; }
+.settings-panel .model-row #cfgModel { background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 12px; font-size: 14px; font-family: inherit; width: 100%; }
+.settings-panel .model-row button { flex: 0; white-space: nowrap; font-size: 12px; padding: 10px 14px; border-radius: var(--radius-sm); }
+.settings-panel .fetch-status { font-size: 11px; margin-top: 4px; display: none; }
+.settings-panel .fetch-status.ok { color: var(--success); }
+.settings-panel .fetch-status.err { color: var(--danger); }
+/* provider list */
+.provider-list { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
+.provider-item { display: flex; gap: 8px; align-items: center; }
+.provider-item input { flex: 1; }
+.provider-item .prov-url { flex: 2; }
+.provider-item button { flex: 0; padding: 10px 12px; font-size: 14px; min-width: 36px; }
+.add-prov-btn { margin-top: 6px; }
+/* provider section header */
+.prov-section-label { display: flex; justify-content: space-between; align-items: center; }
+.prov-section-label span { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .5px; }
+.prov-section-label button { font-size: 11px; padding: 4px 10px; background: var(--bg); color: var(--text-muted); border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; }
+.prov-section-label button:hover { background: var(--border); color: var(--text); }
+.settings-panel .btn-row { display: flex; gap: 8px; margin-top: 18px; }
+.settings-panel .btn-row button {
+    flex: 1; padding: 10px; border-radius: var(--radius-sm); border: none;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+}
+.btn-primary { background: #1e3a5f; color: #fff; }
+.btn-primary:hover { background: #162d4a; }
+.btn-ghost { background: var(--bg); color: var(--text-muted); border: 1px solid var(--border) !important; }
+.btn-ghost:hover { background: var(--border); }
+.btn-danger { background: transparent; color: var(--danger); border: none !important; font-size: 14px !important; font-weight: 700; margin: 16px 0 0 4px; padding: 8px 0; opacity: .5; }
+.btn-danger:hover { opacity: 1; }
+
+/* chat area */
+.chat {
+    flex: 1; overflow-y: auto; padding: 20px 16px 32px;
+    display: flex; flex-direction: column; align-items: center;
+}
+.chat-inner {
+    width: 100%; max-width: 720px;
+    display: flex; flex-direction: column; gap: 20px;
+}
+.chat .empty-wrap {
+    flex: 1; display: flex; align-items: center; justify-content: center;
+}
+.chat .empty {
+    text-align: center; color: #777;
+}
+.chat .empty .logo {
+    width: 48px; height: 48px; background: var(--surface2);
+    border-radius: 50%; margin: 0 auto 16px;
+    display: flex; align-items: center; justify-content: center; font-size: 22px;
+}
+.chat .empty h2 { color: var(--text); font-size: 20px; font-weight: 500; margin-bottom: 6px; }
+
+.msg-row { display: flex; flex-direction: column; }
+.msg-row.user { align-items: flex-end; }
+.msg-row.assistant { align-items: flex-start; }
+.msg-row .label {
+    font-size: 11px; font-weight: 600; color: var(--text-muted);
+    margin-bottom: 4px; padding: 0 4px;
+}
+.msg {
+    max-width: 85%; padding: 12px 16px; border-radius: var(--radius);
+    font-size: 15px; line-height: 1.6; word-wrap: break-word; white-space: pre-wrap;
+}
+.msg.user { background: var(--surface2); }
+.msg.assistant { background: transparent; }
+.msg.assistant.streaming { }
+.msg.error { color: var(--danger); font-size: 13px; background: none; border: none; padding: 4px; }
+.msg.system { color: #777; font-size: 12px; background: none; border: none; padding: 4px; }
+
+/* input bar */
+.input-bar-wrap {
+    display: flex; justify-content: center; padding: 0 16px 16px; flex-shrink: 0;
+}
+.input-bar-inner {
+    width: 100%; max-width: 720px;
+}
+.input-bar {
+    display: flex; gap: 0;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 6px 8px; align-items: flex-end;
+}
+.input-bar textarea {
+    flex: 1; background: transparent; color: var(--text);
+    border: none; padding: 6px 8px; font-size: 15px; font-family: inherit;
+    resize: none; min-height: 24px; max-height: 160px; line-height: 1.5;
+    outline: none;
+}
+.input-bar button {
+    background: var(--text); color: #212121; border: none;
+    border-radius: 50%; width: 32px; height: 32px; font-size: 16px;
+    cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+    margin-bottom: 2px; transition: .15s;
+}
+.input-bar button:hover { background: #2563eb; }
+.input-bar button:disabled { opacity: .3; cursor: not-allowed; }
+.input-bar #stopBtn {
+    background: var(--danger); color: #fff; border-radius: 50%;
+    width: 32px; height: 32px; font-size: 14px;
+}
+.input-bar #stopBtn:hover { background: #ef4444; }
+
+/* scrollbar */
+.chat::-webkit-scrollbar { width: 4px; }
+.chat::-webkit-scrollbar-track { background: transparent; }
+.chat::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+    <button onclick="clearChat()" title="New chat">New chat</button>
+    <span class="spacer"></span>
+    <select id="headerModel" onchange="onHeaderModelChange()"><option value="">No model</option></select>
+    <button class="icon-btn" onclick="openSettings()" title="Settings">+</button>
+</div>
+
+<div class="chat" id="chat">
+    <div class="empty-wrap"><div class="empty">
+        <div class="logo">⚡</div>
+        <h2>How can I help?</h2>
+        <p>Set up your provider in Settings to start</p>
+    </div></div>
+</div>
+
+<div class="input-bar-wrap">
+    <div class="input-bar-inner">
+        <div class="input-bar">
+            <textarea id="input" rows="1" placeholder="Ask anything…" onkeydown="handleKey(event)"></textarea>
+            <button id="sendBtn" onclick="sendMessage()" disabled>↑</button>
+            <button id="stopBtn" onclick="stopStream()" style="display:none">■</button>
+        </div>
+    </div>
+</div>
+
+<!-- settings overlay -->
+<div class="settings-overlay" id="settingsOverlay">
+    <div class="settings-panel">
+        <h3>⚙ Settings</h3>
+        <label>Provider URL</label>
+        <input id="cfgUrl" placeholder="https://api.openai.com/v1" spellcheck="false">
+        <label>API Key</label>
+        <input id="cfgKey" type="text" placeholder="sk-…" spellcheck="false">
+        <label>Model</label>
+        <div class="model-row">
+            <select id="cfgModel"><option value="">..........</option></select>
+            <button class="btn-ghost" onclick="fetchModels()" id="fetchBtn">Fetch</button>
+        </div>
+        <div class="fetch-status" id="fetchStatus"></div>
+        <div class="fetch-status" id="saveStatus"></div>
+        <label>System Prompt (optional)</label>
+        <input id="cfgSystem" placeholder="You are a helpful assistant." spellcheck="false">
+        <div class="btn-row">
+            <button class="btn-ghost" onclick="closeSettings()">Cancel</button>
+            <button class="btn-primary" onclick="saveSettings()">Save</button>
+        </div>
+        <button class="btn-danger" onclick="deleteAll()">Delete all data</button>
+    </div>
+</div>
+
+<script>
+// ── state ──
+const LS = 'openchat_cfg';
+let cfg = { url: '', key: '', model: '', system: 'You are a helpful assistant.' };
+let modelList = [];
+let fetchedInSession = false;
+let messages = [];
+let streamingAbort = null;
+
+// ── load / save ──
+function loadCfg() {
+    try {
+        const saved = JSON.parse(localStorage.getItem(LS));
+        if (saved) {
+            cfg.url = saved.url || '';
+            cfg.key = saved.key || '';
+            cfg.model = saved.model || '';
+            modelList = saved.modelList || [];
+        }
+    } catch(e) {}
+    fetchedInSession = false;
+    updateHeaderModel();
+}
+
+function saveCfg() {
+    cfg.model = document.getElementById('headerModel').value;
+    localStorage.setItem(LS, JSON.stringify({ ...cfg, modelList }));
+    updateHeaderModel();
+}
+
+function updateHeaderModel() {
+    const sel = document.getElementById('headerModel');
+    sel.innerHTML = '';
+    if (modelList.length === 0 && cfg.model) {
+        sel.innerHTML = `<option value="${esc(cfg.model)}" selected>${esc(cfg.model)}</option>`;
+        return;
+    }
+    if (modelList.length === 0) {
+        sel.innerHTML = '<option value="">No model</option>';
+        return;
+    }
+    for (const m of modelList) {
+        const selAttr = (m.id === cfg.model) ? ' selected' : '';
+        sel.innerHTML += `<option value="${esc(m.id)}"${selAttr}>${esc(m.id)}</option>`;
+    }
+    if (!sel.value && modelList.length > 0) { sel.value = modelList[0].id; cfg.model = modelList[0].id; }
+}
+
+function onHeaderModelChange() {
+    cfg.model = document.getElementById('headerModel').value;
+    localStorage.setItem(LS, JSON.stringify({ ...cfg, modelList }));
+}
+
+function populateModelSelect() {
+    const sel = document.getElementById('cfgModel');
+    sel.innerHTML = '';
+    if (!fetchedInSession) {
+        sel.innerHTML = '<option value="">..........</option>';
+        return;
+    }
+    if (modelList.length === 0) {
+        sel.innerHTML = '<option value="">..........</option>';
+        if (cfg.model) sel.innerHTML += `<option value="${esc(cfg.model)}" selected>${esc(cfg.model)} (saved)</option>`;
+        return;
+    }
+    const sorted = [...modelList].sort((a, b) => a.id.localeCompare(b.id));
+    let found = false;
+    for (const m of sorted) {
+        const s = (m.id === cfg.model) ? ' selected' : '';
+        if (m.id === cfg.model) found = true;
+        sel.innerHTML += `<option value="${esc(m.id)}"${s}>${esc(m.id)}</option>`;
+    }
+    if (!found && cfg.model) sel.innerHTML += `<option value="${esc(cfg.model)}" selected>${esc(cfg.model)} (custom)</option>`;
+    if (!sel.value && sorted.length > 0) sel.value = sorted[0].id;
+}
+
+function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+async function fetchModels() {
+    const url = document.getElementById('cfgUrl').value.trim().replace(/\/+$/, '');
+    const key = document.getElementById('cfgKey').value.trim();
+    const statusEl = document.getElementById('fetchStatus');
+    const fetchBtn = document.getElementById('fetchBtn');
+    if (!url) { statusEl.textContent = 'Enter a provider URL first'; statusEl.className = 'fetch-status err'; statusEl.style.display = 'block'; return; }
+    fetchBtn.disabled = true; fetchBtn.textContent = '…'; statusEl.style.display = 'none';
+    try {
+        const resp = await fetch(url + '/models', { headers: key ? { 'Authorization': 'Bearer ' + key } : {} });
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}: ${(await resp.text()).slice(0, 200)}`);
+        const data = await resp.json();
+        const models = (data.data || data.models || []).map(m => ({
+            id: typeof m === 'string' ? m : (m.id || m.model || m.name || ''),
+            owned_by: m.owned_by || m.ownedBy || ''
+        })).filter(m => m.id);
+        if (models.length === 0) {
+            statusEl.textContent = '⚠ No models found for this provider.';
+            statusEl.className = 'fetch-status err';
+            statusEl.style.display = 'block';
+            return;
+        }
+        statusEl.textContent = `✅ ${models.length} models loaded`;
+        statusEl.className = 'fetch-status ok';
+        statusEl.style.display = 'block';
+        modelList = models;
+        fetchedInSession = true;
+        cfg.url = url;
+        cfg.key = key;
+        localStorage.setItem(LS, JSON.stringify({ ...cfg, modelList }));
+        populateModelSelect();
+        updateHeaderModel();
+    } catch (e) {
+        statusEl.textContent = '❌ ' + e.message; statusEl.className = 'fetch-status err'; statusEl.style.display = 'block';
+    } finally {
+        fetchBtn.disabled = false; fetchBtn.textContent = 'Fetch';
+    }
+}
+
+function openSettings() {
+    document.getElementById('cfgUrl').value = '';
+    document.getElementById('cfgKey').value = '';
+    document.getElementById('cfgSystem').value = '';
+    populateModelSelect();
+    document.getElementById('fetchStatus').style.display = 'none';
+    document.getElementById('settingsOverlay').classList.add('show');
+}
+
+function closeSettings() {
+    document.getElementById('saveStatus').style.display = 'none';
+    document.getElementById('saveStatus').textContent = '';
+    document.getElementById('settingsOverlay').classList.remove('show');
+}
+
+function saveSettings() {
+    const url = document.getElementById('cfgUrl').value.trim().replace(/\/+$/, '');
+    const key = document.getElementById('cfgKey').value.trim();
+    const model = document.getElementById('cfgModel').value;
+    const saveStatus = document.getElementById('saveStatus');
+
+    if (!url || !key) {
+        saveStatus.textContent = '⚠ Set your provider URL and API key.';
+        saveStatus.className = 'fetch-status err';
+        saveStatus.style.display = 'block';
+        return;
+    }
+    if (!model) {
+        saveStatus.textContent = '⚠ No model selected. Click Fetch then pick one.';
+        saveStatus.className = 'fetch-status err';
+        saveStatus.style.display = 'block';
+        return;
+    }
+    if (!fetchedInSession) {
+        saveStatus.textContent = '⚠ Must click Fetch first.';
+        saveStatus.className = 'fetch-status err';
+        saveStatus.style.display = 'block';
+        return;
+    }
+
+    cfg.url = url;
+    cfg.key = key;
+    cfg.model = model;
+    modelList = [...modelList];
+    localStorage.setItem(LS, JSON.stringify({ ...cfg, modelList }));
+    updateHeaderModel();
+    closeSettings();
+    addSystemMsg('✅ Ready — model: ' + cfg.model);
+}
+
+function deleteAll() {
+    if (!confirm('Delete ALL settings and chat history?')) return;
+    localStorage.removeItem(LS);
+    cfg = { url: '', key: '', model: '', system: 'You are a helpful assistant.' };
+    modelList = []; messages = [];
+    closeSettings();
+    document.getElementById('chat').innerHTML = `<div class="empty-wrap"><div class="empty"><div class="logo">⚡</div><h2>How can I help?</h2><p>Set up your provider in Settings to start</p></div></div>`;
+    updateHeaderModel();
+}
+
+// ── chat UI ──
+const chatEl = document.getElementById('chat');
+const inputEl = document.getElementById('input');
+const sendBtn = document.getElementById('sendBtn');
+
+function addSystemMsg(text) {
+    const inner = getChatInner();
+    const div = document.createElement('div');
+    div.className = 'msg-row';
+    div.innerHTML = `<div class="msg system">${esc(text)}</div>`;
+    inner.appendChild(div);
+    scrollDown();
+}
+
+function addMsg(role, text, streaming = false) {
+    const inner = getChatInner();
+    // Remove empty state
+    const emptyWrap = chatEl.querySelector('.empty-wrap');
+    if (emptyWrap) emptyWrap.remove();
+
+    const row = document.createElement('div');
+    row.className = 'msg-row ' + role;
+    const label = role === 'user' ? 'You' : 'Assistant';
+    row.innerHTML = `<div class="label">${label}</div>`;
+    const msgDiv = document.createElement('div');
+    msgDiv.className = 'msg ' + role + (streaming ? ' streaming' : '');
+    msgDiv.textContent = text;
+    if (streaming) msgDiv.id = 'streaming-msg';
+    row.appendChild(msgDiv);
+    inner.appendChild(row);
+    scrollDown();
+    return msgDiv;
+}
+
+function getChatInner() {
+    let inner = chatEl.querySelector('.chat-inner');
+    if (!inner) {
+        inner = document.createElement('div');
+        inner.className = 'chat-inner';
+        chatEl.appendChild(inner);
+    }
+    return inner;
+}
+
+function scrollDown() { chatEl.scrollTop = chatEl.scrollHeight; }
+
+function clearChat() {
+    messages = [];
+    chatEl.innerHTML = `<div class="empty-wrap"><div class="empty"><div class="logo">⚡</div><h2>New chat</h2></div></div>`;
+}
+
+// ── send ──
+function stopStream() {
+    if (streamingAbort) streamingAbort.abort();
+}
+
+async function sendMessage() {
+    const text = inputEl.value.trim();
+    if (!text) return;
+    if (!cfg.url || !cfg.key) { addSystemMsg('⚠ Set your provider URL and API key in Settings (⚙) first.'); return; }
+    if (!cfg.model) { addSystemMsg('⚠ No model selected. Pick one from the header dropdown.'); return; }
+
+    inputEl.value = '';
+    inputEl.style.height = 'auto';
+    sendBtn.style.display = 'none';
+    document.getElementById('stopBtn').style.display = '';
+
+    addMsg('user', text);
+    const assistantDiv = addMsg('assistant', '', true);
+
+    const systemMsgs = cfg.system ? [{ role: 'system', content: cfg.system }] : [];
+    const payload = {
+        model: cfg.model,
+        messages: [...systemMsgs, ...messages.slice(-20), { role: 'user', content: text }],
+        stream: true
+    };
+
+    try {
+        streamingAbort = new AbortController();
+        const resp = await fetch(cfg.url + '/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + cfg.key
+            },
+            body: JSON.stringify(payload),
+            signal: streamingAbort.signal
+        });
+
+        if (!resp.ok) {
+            const errText = await resp.text().catch(() => 'Unknown error');
+            throw new Error(`HTTP ${resp.status}: ${errText.slice(0, 300)}`);
+        }
+
+        const reader = resp.body.getReader();
+        const decoder = new TextDecoder();
+        let fullText = '';
+        let buffer = '';
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop() || '';
+
+            for (const line of lines) {
+                const trimmed = line.trim();
+                if (!trimmed || !trimmed.startsWith('data: ')) continue;
+                const data = trimmed.slice(6);
+                if (data === '[DONE]') continue;
+                try {
+                    const chunk = JSON.parse(data);
+                    const delta = chunk.choices?.[0]?.delta?.content;
+                    if (delta) {
+                        fullText += delta;
+                        assistantDiv.textContent = fullText;
+                        scrollDown();
+                    }
+                } catch(e) { /* skip malformed chunks */ }
+            }
+        }
+
+        assistantDiv.classList.remove('streaming');
+        assistantDiv.id = '';
+
+        if (!fullText) {
+            assistantDiv.textContent = '(empty response)';
+            assistantDiv.className = 'msg error';
+        }
+
+        messages.push({ role: 'user', content: text });
+        messages.push({ role: 'assistant', content: fullText || '(empty)' });
+        if (messages.length > 40) messages = messages.slice(-40);
+
+    } catch (e) {
+        if (e.name === 'AbortError') {
+            sendBtn.style.display = '';
+            document.getElementById('stopBtn').style.display = 'none';
+            sendBtn.disabled = false;
+            return;
+        }
+        assistantDiv.classList.remove('streaming');
+        assistantDiv.className = 'msg error';
+        assistantDiv.textContent = '❌ ' + e.message;
+        assistantDiv.id = '';
+    } finally {
+        streamingAbort = null;
+        sendBtn.style.display = '';
+        document.getElementById('stopBtn').style.display = 'none';
+        sendBtn.disabled = false;
+        inputEl.focus();
+    }
+}
+
+// ── keyboard ──
+function handleKey(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+    }
+}
+
+// ── auto-resize textarea ──
+inputEl.addEventListener('input', () => {
+    inputEl.style.height = 'auto';
+    inputEl.style.height = Math.min(inputEl.scrollHeight, 160) + 'px';
+    sendBtn.disabled = !inputEl.value.trim();
+});
+
+// ── init ──
+loadCfg();
+inputEl.focus();
+</script>
+</body>
+</html>
